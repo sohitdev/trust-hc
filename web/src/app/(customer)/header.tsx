@@ -29,10 +29,6 @@ export function Header() {
               </span>
             )}
           </Link>
-          <Link href="/login" className="flex items-center gap-1 text-sm font-medium text-zinc-600 hover:text-zinc-900">
-            <User className="w-5 h-5" />
-            <span>Sign In</span>
-          </Link>
         </nav>
       </div>
     </header>

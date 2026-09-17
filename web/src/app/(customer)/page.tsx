@@ -9,10 +9,11 @@ export const dynamic = "force-dynamic"
 export default async function StorefrontPage({
   searchParams,
 }: {
-  searchParams: { q?: string }
+  searchParams: Promise<{ q?: string }>
 }) {
+  const resolvedParams = await searchParams;
   const supabase = await createClient()
-  const query = searchParams.q || ""
+  const query = resolvedParams.q || ""
   
   let dbQuery = supabase
     .from("products")

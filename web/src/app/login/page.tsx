@@ -4,11 +4,12 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Storefront } from "@phosphor-icons/react/dist/ssr"
 
-export default function LoginPage({
+export default async function LoginPage({
   searchParams,
 }: {
-  searchParams: { message: string }
+  searchParams: Promise<{ message: string }>
 }) {
+  const resolvedParams = await searchParams;
   return (
     <div className="min-h-screen bg-zinc-50 flex items-center justify-center p-4">
       <div className="w-full max-w-sm bg-white border border-zinc-200 rounded-xl shadow-sm p-8">
@@ -25,7 +26,7 @@ export default function LoginPage({
           Enter admin credentials to continue
         </p>
 
-        <form className="space-y-4">
+        <form action={login} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="email">Email</Label>
             <Input id="email" name="email" type="email" required placeholder="admin@trusthealth.care" />
@@ -35,13 +36,13 @@ export default function LoginPage({
             <Input id="password" name="password" type="password" required />
           </div>
           
-          {searchParams?.message && (
+          {resolvedParams?.message && (
             <div className="text-sm font-medium text-red-500 bg-red-50 p-3 rounded-md text-center">
-              {searchParams.message}
+              {resolvedParams.message}
             </div>
           )}
 
-          <Button formAction={login} className="w-full bg-zinc-900 hover:bg-zinc-800 text-white mt-4">
+          <Button type="submit" className="w-full bg-zinc-900 hover:bg-zinc-800 text-white mt-4">
             Sign In
           </Button>
         </form>
