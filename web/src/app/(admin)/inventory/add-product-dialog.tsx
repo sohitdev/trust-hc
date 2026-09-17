@@ -60,11 +60,9 @@ export function AddProductDialog() {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button className="bg-zinc-900 text-white hover:bg-zinc-800 rounded-md">
-          <Plus className="w-4 h-4 mr-2" />
-          Add Product
-        </Button>
+      <DialogTrigger className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-zinc-950 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 bg-emerald-600 text-zinc-50 hover:bg-emerald-600/90 shadow h-9 px-4 py-2">
+        <Plus className="w-4 h-4" />
+        Add Medicine
       </DialogTrigger>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>

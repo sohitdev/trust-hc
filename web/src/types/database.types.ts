@@ -64,6 +64,8 @@ export interface Database {
           payment_method: 'upi' | 'cod' | 'cash' | 'card'
           status: 'pending_review' | 'confirmed' | 'out_for_delivery' | 'delivered' | 'ready_for_pickup' | 'picked_up' | 'cancelled'
           total_amount: number
+          delivery_address: string | null
+          prescription_url: string | null
           created_at: string
           updated_at: string
         }
@@ -74,6 +76,8 @@ export interface Database {
           payment_method: 'upi' | 'cod' | 'cash' | 'card'
           status?: 'pending_review' | 'confirmed' | 'out_for_delivery' | 'delivered' | 'ready_for_pickup' | 'picked_up' | 'cancelled'
           total_amount: number
+          delivery_address?: string | null
+          prescription_url?: string | null
           created_at?: string
           updated_at?: string
         }
@@ -84,6 +88,8 @@ export interface Database {
           payment_method?: 'upi' | 'cod' | 'cash' | 'card'
           status?: 'pending_review' | 'confirmed' | 'out_for_delivery' | 'delivered' | 'ready_for_pickup' | 'picked_up' | 'cancelled'
           total_amount?: number
+          delivery_address?: string | null
+          prescription_url?: string | null
           created_at?: string
           updated_at?: string
         }

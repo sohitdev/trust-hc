@@ -212,7 +212,7 @@ export function PosTerminal({ products }: { products: Product[] }) {
 
             <div className="space-y-2">
               <Label>Payment Method</Label>
-              <Select value={paymentMethod} onValueChange={(v: PaymentMethod) => setPaymentMethod(v)}>
+              <Select value={paymentMethod} onValueChange={(v: PaymentMethod | null) => v && setPaymentMethod(v)}>
                 <SelectTrigger>
                   <SelectValue placeholder="Select payment method" />
                 </SelectTrigger>

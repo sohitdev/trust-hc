@@ -1,4 +1,4 @@
-import { Package, Monitor, Storefront, SignOut } from "@phosphor-icons/react/dist/ssr"
+import { Package, Monitor, Storefront, SignOut, ClipboardText } from "@phosphor-icons/react/dist/ssr"
 import Link from "next/link"
 import { logout } from "@/app/actions/logout"
 
@@ -31,6 +31,13 @@ export default function AdminLayout({
           >
             <Package weight="duotone" className="w-5 h-5" />
             <span>Inventory</span>
+          </Link>
+          <Link 
+            href="/orders" 
+            className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-zinc-900 hover:text-white transition-colors"
+          >
+            <ClipboardText weight="duotone" className="w-5 h-5" />
+            <span>Orders</span>
           </Link>
         </nav>
         <div className="p-4 border-t border-zinc-800">

@@ -13,7 +13,7 @@ export function CartView() {
     return (
       <div className="py-24 text-center">
         <h2 className="text-2xl font-semibold mb-2">Your cart is empty</h2>
-        <p className="text-zinc-500 mb-8">Looks like you haven't added any medicines yet.</p>
+        <p className="text-zinc-500 mb-8">Looks like you haven&apos;t added any medicines yet.</p>
         <Link href="/">
           <Button className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-full px-8">
             Browse Medicines
@@ -99,9 +99,11 @@ export function CartView() {
             <span>₹{getTotal().toFixed(2)}</span>
           </div>
           
-          <Button className="w-full bg-zinc-900 hover:bg-zinc-800 text-white rounded-full h-12 text-base">
-            Proceed to Checkout
-          </Button>
+          <Link href="/checkout" className="block w-full">
+            <Button className="w-full bg-zinc-900 hover:bg-zinc-800 text-white rounded-full h-12 text-base">
+              Proceed to Checkout
+            </Button>
+          </Link>
           
           <p className="text-xs text-zinc-500 text-center mt-4">
             Minimum order amount is ₹200 for free delivery.

@@ -4,14 +4,14 @@ import { Database } from "@/types/database.types"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
-import { useCustomerCartStore } from "../cart-store"
+import { useCustomerCartStore, CartItem } from "./cart-store"
 
 type Product = Database['public']['Tables']['products']['Row']
 
 export function ProductCard({ product }: { product: Product }) {
   const { addItem, items } = useCustomerCartStore()
   const outOfStock = product.stock_quantity === 0
-  const cartItem = items.find(item => item.product.id === product.id)
+  const cartItem = items.find((item: CartItem) => item.product.id === product.id)
   const isMaxStockReached = cartItem ? cartItem.quantity >= product.stock_quantity : false
 
   return (
