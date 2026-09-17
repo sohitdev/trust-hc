@@ -3,7 +3,7 @@
 import { useCustomerCartStore } from "../cart-store"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
-import { Minus, Plus, Trash } from "@phosphor-icons/react"
+import { Minus, Plus, Trash, ShoppingCart } from "@phosphor-icons/react"
 import Link from "next/link"
 
 export function CartView() {
@@ -11,11 +11,16 @@ export function CartView() {
 
   if (items.length === 0) {
     return (
-      <div className="py-24 text-center">
-        <h2 className="text-2xl font-semibold mb-2">Your cart is empty</h2>
-        <p className="text-zinc-500 mb-8">Looks like you haven&apos;t added any medicines yet.</p>
+      <div className="py-32 flex flex-col items-center text-center max-w-md mx-auto">
+        <div className="w-24 h-24 bg-zinc-100 rounded-full flex items-center justify-center text-zinc-400 mb-8 shadow-sm border border-zinc-200/50">
+          <ShoppingCart className="w-10 h-10" weight="duotone" />
+        </div>
+        <h2 className="text-3xl font-semibold tracking-tight text-zinc-950 mb-4">Your cart is empty</h2>
+        <p className="text-zinc-500 mb-10 leading-relaxed text-lg">
+          Looks like you haven&apos;t added any medicines yet. Browse our catalog to find what you need.
+        </p>
         <Link href="/">
-          <Button className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-full px-8">
+          <Button className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-full px-10 h-14 text-base shadow-sm">
             Browse Medicines
           </Button>
         </Link>
