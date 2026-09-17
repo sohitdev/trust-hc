@@ -1,87 +1,183 @@
-# Trust Health.care
+# Trust Health.care – Pharmacy Management & E-Commerce Platform
 
-A modern, production-ready Pharmacy Management System and Customer Storefront built with Next.js, Tailwind CSS, and Supabase. 
+![Next.js](https://img.shields.io/badge/Next.js-16-black?style=for-the-badge&logo=next.js)
+![Supabase](https://img.shields.io/badge/Supabase-Database-3ECF8E?style=for-the-badge&logo=supabase)
+![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-v4-38B2AC?style=for-the-badge&logo=tailwind-css)
+![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript)
 
-![Next.js](https://img.shields.io/badge/Next.js-16-black?style=flat&logo=next.js)
-![Supabase](https://img.shields.io/badge/Supabase-PostgreSQL-3ECF8E?style=flat&logo=supabase)
-![Tailwind CSS](https://img.shields.io/badge/Tailwind-v4-06B6D4?style=flat&logo=tailwindcss)
-![TypeScript](https://img.shields.io/badge/TypeScript-Ready-3178C6?style=flat&logo=typescript)
-
-## 🏥 Overview
-
-Trust Health.care bridges the gap between physical store operations and online customer sales. It provides a unified database and interface for managing inventory, processing walk-in POS (Point of Sale) billing, and handling online prescription orders.
-
-### Core Modules
-1. **Customer Storefront:** Public-facing catalog where users can browse medicines, add them to their cart, and securely check out. Requires prescription file uploads for restricted medications.
-2. **Admin POS (Point of Sale):** A fast, keyboard-friendly billing interface for in-store walk-ins, fully integrated with real-time inventory.
-3. **Inventory Management:** Dashboard to create, track, and soft-delete pharmaceutical stock.
-4. **Order Management:** A unified dashboard for admins to process online orders, verify uploaded prescriptions, and update fulfillment statuses (Pending, Confirmed, Out for Delivery, etc.).
-
-## 🏗️ Tech Stack & Architecture
-
-* **Frontend:** Next.js 16 (App Router), React 19, Tailwind CSS v4, Base UI (headless components).
-* **Backend / Database:** Supabase (PostgreSQL).
-* **State Management:** Zustand (for persistent Customer Carts and ephemeral POS Carts).
-* **Authentication:** Supabase Auth (Email/Password for Admin).
-* **Storage:** Supabase Storage (for secure prescription uploads).
-
-**Key Engineering Decisions:**
-* **Atomic Transactions:** Checkout processes (both POS and Online) utilize custom PostgreSQL RPC (Remote Procedure Call) functions to lock rows (`FOR UPDATE`) and deduct stock atomically. This prevents race conditions and overselling.
-* **Row Level Security (RLS):** Strict database policies ensure that only authenticated Admins can modify inventory or view sensitive customer orders.
-* **Optimized Routing:** The application uses Next.js Server Actions and `proxy.ts` (formerly middleware) to securely route users and protect the `/(admin)` directories.
+A full-stack, unified pharmacy management system. This repository contains the complete source code for both the **Internal Store Operations (POS & Inventory)** and the **Public Customer Storefront (E-commerce & Prescription Uploads)**.
 
 ---
 
-## 🚀 Local Development Setup
+## 📑 Table of Contents
+1. [System Architecture](#system-architecture)
+2. [Folder Structure](#folder-structure)
+3. [Database Schema & RPCs](#database-schema--rpcs)
+4. [State Management](#state-management)
+5. [Local Development Guide](#local-development-guide)
+6. [Deployment](#deployment)
+7. [Troubleshooting](#troubleshooting)
+
+---
+
+## 🏗️ System Architecture
+
+The application is built on the **Next.js 16 App Router** and utilizes **Supabase** as a fully managed Backend-as-a-Service (BaaS).
+
+### Core Design Principles:
+- **Route Groups for Separation of Concerns:** The Next.js app directory is split into `(admin)` and `(customer)`. This allows distinct layouts, metadata, and authentication boundaries without polluting the URL structure.
+- **Atomic Database Transactions:** E-commerce carts often suffer from race conditions (overselling out-of-stock items). This project uses Supabase Postgres RPCs (Remote Procedure Calls) with `FOR UPDATE` row-level locks to deduct stock and create orders in a single, atomic transaction.
+- **Secure File Handling:** Prescriptions are uploaded directly from the client to a private Supabase Storage bucket. The database only stores the secure reference URL.
+- **Edge Security:** `src/proxy.ts` (Next.js Middleware) intercepts traffic to `/(admin)` routes, verifying the user's Supabase JWT before rendering the page.
+
+---
+
+## 📂 Folder Structure
+
+The project is contained entirely within the `web/` directory. Here is the breakdown of the codebase to help you navigate:
+
+```text
+trust-hc/
+└── web/
+    ├── src/
+    │   ├── app/
+    │   │   ├── (admin)/             # PROTECTED: Staff Operations
+    │   │   │   ├── inventory/       # Stock management & Add Product modal
+    │   │   │   ├── orders/          # Online order fulfillment dashboard
+    │   │   │   ├── pos/             # Point of Sale billing terminal
+    │   │   │   └── layout.tsx       # Admin Sidebar & Auth wrapper
+    │   │   │
+    │   │   ├── (customer)/          # PUBLIC: E-Commerce Storefront
+    │   │   │   ├── cart/            # Customer shopping cart
+    │   │   │   ├── checkout/        # Checkout & Prescription upload flow
+    │   │   │   ├── cart-store.ts    # Zustand logic for customer cart
+    │   │   │   ├── page.tsx         # Product catalog
+    │   │   │   └── layout.tsx       # Storefront Header/Footer
+    │   │   │
+    │   │   ├── login/               # Admin authentication page
+    │   │   ├── layout.tsx           # Global Root Layout (Fonts & Globals)
+    │   │   └── globals.css          # Tailwind CSS v4 variables
+    │   │
+    │   ├── components/              # Reusable UI Components
+    │   │   └── ui/                  # Shadcn / Base UI generic elements (Buttons, Dialogs)
+    │   │
+    │   ├── lib/                     
+    │   │   ├── supabase/            # Supabase Server & Client initialization
+    │   │   └── utils.ts             # Tailwind class merging (cn)
+    │   │
+    │   ├── types/
+    │   │   └── database.types.ts    # Auto-generated TypeScript types matching Postgres
+    │   │
+    │   └── proxy.ts                 # Next.js Middleware handling Route Protection
+    │
+    ├── supabase/
+    │   └── migrations/              # SQL files for initializing tables & policies
+    │
+    ├── package.json                 # Project dependencies & scripts
+    └── next.config.ts               # Next.js configuration
+```
+
+---
+
+## 🗄️ Database Schema & RPCs
+
+The PostgreSQL database is fully strictly typed. Below are the primary entities:
+
+### 1. `products`
+Stores the pharmacy's inventory.
+- `id` (UUID, Primary Key)
+- `name` (TEXT) - Name of the medicine
+- `description` (TEXT)
+- `price` (NUMERIC)
+- `stock_quantity` (INTEGER)
+- `requires_prescription` (BOOLEAN) - Flags if checkout requires an upload
+- `is_active` (BOOLEAN) - Used for soft-deletes
+
+### 2. `orders`
+Represents a completed POS transaction or an online customer order.
+- `id` (UUID, Primary Key)
+- `customer_phone` (TEXT) - Used to track guest users
+- `fulfillment_type` (ENUM: `delivery`, `pickup`, `in_store`)
+- `status` (ENUM: `pending_review`, `confirmed`, `out_for_delivery`, `delivered`, `cancelled`)
+- `delivery_address` (TEXT)
+- `prescription_url` (TEXT) - Link to Supabase Storage
+
+### 3. `order_items`
+Line items for a specific order. Linked via `order_id` and `product_id`.
+
+### Security (Row Level Security)
+- **Products:** Viewable by everyone (`SELECT`). Modifiable only by Authenticated Admins.
+- **Orders/Order Items:** Strictly viewable and modifiable only by Authenticated Admins. Customers do not query orders directly; they are handled securely via the backend.
+
+---
+
+## 🧠 State Management
+
+We use **Zustand** for lightweight, fast state management. 
+
+Because the Admin POS and the Customer Storefront serve entirely different purposes, **state is deliberately separated**:
+
+1. **POS Cart (`src/app/(admin)/pos/cart-store.ts`)**
+   - *Ephemeral:* This state is intentionally **not** persisted to `localStorage`. If the browser refreshes, the POS cart clears. This prevents accidentally billing the wrong customer during fast in-store operations.
+2. **Customer Cart (`src/app/(customer)/cart-store.ts`)**
+   - *Persistent:* This state uses Zustand's `persist` middleware to save the cart to the user's `localStorage`. Customers can leave the site and return days later to find their medicines still in the cart.
+
+---
+
+## 🛠️ Local Development Guide
 
 ### Prerequisites
-* Node.js (v18 or higher)
-* A [Supabase](https://supabase.com/) account and project.
+- Node.js (v18+)
+- A [Supabase](https://supabase.com/) Account
 
-### 1. Clone the repository
+### 1. Clone & Install
 ```bash
 git clone https://github.com/sohitdev/trust-hc.git
 cd trust-hc/web
-```
-
-### 2. Install Dependencies
-```bash
 npm install
 ```
 
+### 2. Supabase Setup
+1. Create a new project on Supabase.
+2. Go to the **SQL Editor** and execute the 3 migration files located in `web/supabase/migrations/` in sequential order:
+   - `00000000000000_init.sql`
+   - `00000000000001_orders.sql`
+   - `00000000000002_phase3_additions.sql`
+3. Go to **Authentication > Users** and create an Admin User (Ensure "Auto Confirm User?" is checked).
+
 ### 3. Environment Variables
-Create a `.env.local` file in the `web` directory and add your Supabase credentials:
+Create a `web/.env.local` file:
 ```env
-NEXT_PUBLIC_SUPABASE_URL=https://your-project-id.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your-publishable-anon-key
+NEXT_PUBLIC_SUPABASE_URL=https://<YOUR_PROJECT_ID>.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=<YOUR_PUBLISHABLE_ANON_KEY>
 ```
 
-### 4. Database Setup (Supabase)
-Navigate to the **SQL Editor** in your Supabase Dashboard and run the migration files located in `web/supabase/migrations/` in the following order:
-1. `00000000000000_init.sql` *(Creates the products table and RLS)*
-2. `00000000000001_orders.sql` *(Creates orders, order_items, and POS checkout RPC)*
-3. `00000000000002_phase3_additions.sql` *(Creates storage buckets and online checkout RPC)*
-
-### 5. Create an Admin Account
-To access the POS and Inventory systems, you must create a user in your Supabase Dashboard:
-1. Go to **Authentication** > **Users** > **Add User**.
-2. Enter an email and password.
-3. Ensure **Auto Confirm User?** is checked.
-
-### 6. Start the Development Server
+### 4. Run the App
 ```bash
 npm run dev --webpack
 ```
-* **Storefront:** [http://localhost:3000](http://localhost:3000)
-* **Admin Login:** [http://localhost:3000/login](http://localhost:3000/login)
+> **Note:** We explicitly use `--webpack` as Next.js 16's Turbopack is currently unstable with Tailwind CSS v4 in certain Node environments.
+
+- **Customer Store:** [http://localhost:3000](http://localhost:3000)
+- **Admin POS:** [http://localhost:3000/login](http://localhost:3000/login)
 
 ---
 
-## 🔒 Security & Data Privacy
+## 🐛 Troubleshooting
 
-* **Prescriptions:** Uploaded to a private Supabase Storage bucket. They are strictly inaccessible to the public and can only be fetched securely via signed URLs or directly by authenticated Admin sessions.
-* **Soft Deletes:** Products are never permanently deleted from the database to preserve historical order integrity. They are marked as `is_active = false`.
+- **Login Button Doesn't Do Anything:** Ensure you are using the correct Node.js version. React 19 forms require `<form action={login}>` and `<button type="submit">`.
+- **Database Error on Checkout:** Ensure you ran the RPC SQL files in Supabase. The Next.js app does not insert into `orders` directly; it calls the `process_customer_checkout` Postgres function.
+- **Fonts look strange:** If `next/font/google` fails in your environment, the app gracefully falls back to native system fonts (`font-sans`).
 
-## 📜 License
+---
 
-Copyright © Trust Healthcare Pvt Ltd. All rights reserved.
+## 🚀 Deployment
+
+This project is optimized for deployment on **Vercel**.
+
+1. Push your code to GitHub.
+2. Import the repository in Vercel.
+3. Set the **Framework Preset** to `Next.js`.
+4. Set the **Root Directory** to `web`.
+5. Add your `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` to the Vercel Environment Variables.
+6. Deploy!
