@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server"
 import { AddProductDialog } from "./add-product-dialog"
+import { ProductActions } from "./product-actions"
 import { Badge } from "@/components/ui/badge"
 import {
   Table,
@@ -97,7 +98,7 @@ export default async function InventoryPage() {
                         </div>
                       </TableCell>
                       <TableCell className="text-right">
-                        <button className="text-sm text-zinc-500 hover:text-zinc-900 transition-colors">Edit</button>
+                        <ProductActions productId={product.id} />
                       </TableCell>
                     </TableRow>
                   )

@@ -1,5 +1,6 @@
-import { Package, Monitor, Storefront } from "@phosphor-icons/react/dist/ssr"
+import { Package, Monitor, Storefront, SignOut } from "@phosphor-icons/react/dist/ssr"
 import Link from "next/link"
+import { logout } from "@/app/actions/logout"
 
 export default function AdminLayout({
   children,
@@ -26,14 +27,22 @@ export default function AdminLayout({
           </Link>
           <Link 
             href="/inventory" 
-            className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-zinc-900 hover:text-white transition-colors bg-zinc-900 text-white"
+            className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-zinc-900 hover:text-white transition-colors"
           >
             <Package weight="duotone" className="w-5 h-5" />
             <span>Inventory</span>
           </Link>
         </nav>
-        <div className="p-4 text-xs text-zinc-600 border-t border-zinc-800">
-          Admin Session Active
+        <div className="p-4 border-t border-zinc-800">
+          <form action={logout}>
+            <button 
+              type="submit" 
+              className="flex items-center gap-2 w-full px-4 py-2 text-sm text-zinc-400 hover:text-white transition-colors"
+            >
+              <SignOut className="w-4 h-4" />
+              Sign Out
+            </button>
+          </form>
         </div>
       </aside>
 
